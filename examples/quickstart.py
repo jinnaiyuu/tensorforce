@@ -15,12 +15,15 @@
 
 import numpy as np
 
-from tensorforce.agents import PPOAgent
+# from tensorforce.agents import RandomAgent
+# from tensorforce.agents import PPOAgent
+from tensorforce.agents import DQNAgent
 from tensorforce.execution import Runner
 from tensorforce.contrib.openai_gym import OpenAIGym
 
 # Create an OpenAIgym environment
-env = OpenAIGym('CartPole-v0', visualize=True)
+# env = OpenAIGym('CartPole-v0', visualize=False)
+env = OpenAIGym('CartPole-v0', visualize=False)
 
 # Network as list of layers
 # - Embedding layer:
@@ -30,45 +33,60 @@ env = OpenAIGym('CartPole-v0', visualize=True)
 #     - class ...Env(discrete.DiscreteEnv):
 #     - self.observation_space = spaces.Discrete(...)
 #   
+
+# agent = RandomAgent(
+#     states_spec=env.states,
+#     actions_spec=env.actions,
+# )
+
 network_spec = [
     #dict(type='embedding', indices=100, size=32),
-    dict(type='dense', size=32, activation='tanh'),
-    dict(type='dense', size=32, activation='tanh')
+    dict(type='dense', size=8, activation='relu'),
+    dict(type='dense', size=8, activation='relu')
 ]
+#    dict(type='dense', size=32, activation='tanh')
 
-agent = PPOAgent(
+agent = DQNAgent(
     states_spec=env.states,
     actions_spec=env.actions,
     network_spec=network_spec,
-    batch_size=4096,
-    # Agent
-    states_preprocessing_spec=None,
-    explorations_spec=None,
-    reward_preprocessing_spec=None,
-    # BatchAgent
-    keep_last_timestep=True,
-    # PPOAgent
-    step_optimizer=dict(
-        type='adam',
-        learning_rate=1e-3
-    ),
-    optimization_steps=10,
-    # Model
-    scope='ppo',
-    discount=0.99,
-    # DistributionModel
-    distributions_spec=None,
-    entropy_regularization=0.01,
-    # PGModel
-    baseline_mode=None,
-    baseline=None,
-    baseline_optimizer=None,
-    gae_lambda=None,
-    # PGLRModel
-    likelihood_ratio_clipping=0.2,
-    summary_spec=None,
-    distributed_spec=None
+    batch_size=64,
+    discount=0.97
 )
+
+# agent = PPOAgent(
+#     states_spec=env.states,
+#     actions_spec=env.actions,
+#     network_spec=network_spec,
+#     batch_size=4096,
+#     # Agent
+#     states_preprocessing_spec=None,
+#     explorations_spec=None,
+#     reward_preprocessing_spec=None,
+#     # BatchAgent
+#     keep_last_timestep=True,
+#     # PPOAgent
+#     step_optimizer=dict(
+#         type='adam',
+#         learning_rate=1e-3
+#     ),
+#     optimization_steps=10,
+#     # Model
+#     scope='ppo',
+#     discount=0.99,
+#     # DistributionModel
+#     distributions_spec=None,
+#     entropy_regularization=0.01,
+#     # PGModel
+#     baseline_mode=None,
+#     baseline=None,
+#     baseline_optimizer=None,
+#     gae_lambda=None,
+#     # PGLRModel
+#     likelihood_ratio_clipping=0.2,
+#     summary_spec=None,
+#     distributed_spec=None
+# )
 
 # Create the runner
 runner = Runner(agent=agent, environment=env)
@@ -82,7 +100,7 @@ def episode_finished(r):
 
 
 # Start learning
-runner.run(episodes=3000, max_episode_timesteps=200, episode_finished=episode_finished)
+runner.run(episodes=100, max_episode_timesteps=200, episode_finished=episode_finished)
 
 # Print statistics
 print("Learning finished. Total episodes: {ep}. Average reward of last 100 episodes: {ar}.".format(

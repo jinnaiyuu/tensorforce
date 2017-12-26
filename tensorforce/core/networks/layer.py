@@ -169,6 +169,10 @@ class Nonlinearity(Layer):
                 summary = tf.summary.scalar(name='relu', tensor=(non_zero / size))
                 self.summaries.append(summary)
 
+        elif self.name == 'leakyrelu':
+            alpha = 0.03  # TODO: parameter
+            x = tf.max(alpha * x, x)
+
         elif self.name == 'selu':
             # https://arxiv.org/pdf/1706.02515.pdf
             alpha = 1.6732632423543772848170429916717
